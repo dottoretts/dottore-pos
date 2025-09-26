@@ -1,0 +1,107 @@
+<div class="page-view-sales">
+    <div class="page-header">
+        <h1>Sales History</h1>
+    </div>
+    
+    <div class="sales-stats">
+        <div class="stat-card">
+            <h3>Today's Revenue</h3>
+            <p id="todayRevenue">PKR 0.00</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p id="totalOrders">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p id="totalRevenue">PKR 0.00</p>
+        </div>
+    </div>
+    
+    <div class="sales-table-container">
+        <h3>Order History</h3>
+        <div class="table-responsive">
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTableBody">
+                    <tr>
+                        <td colspan="7" class="no-data">Loading sales data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSalesData();
+});
+
+async function loadSalesData() {
+    try {
+        const response = await fetch('/api/orders');
+        const data = await response.json();
+        const orders = Array.isArray(data) ? data : (data.data || []);
+        displaySalesData(orders);
+        calculateSalesStats(orders);
+    } catch (error) {
+        console.error('Error loading sales:', error);
+        document.getElementById('salesTableBody').innerHTML = '<tr><td colspan="7" class="no-data">Error loading sales data</td></tr>';
+    }
+}
+
+function displaySalesData(orders) {
+    const tbody = document.getElementById('salesTableBody');
+    if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">No orders found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = orders.map(order => `
+        <tr>
+            <td>${order.orderNumber || 'N/A'}</td>
+            <td>${order.customerName}</td>
+            <td>${order.customerPhone}</td>
+            <td>${new Date(order.orderDate || order.createdAt).toLocaleDateString()}</td>
+            <td>PKR ${order.total.toFixed(2)}</td>
+            <td><span class="status ${order.status}">${order.status}</span></td>
+            <td>
+                <button class="btn btn-secondary" onclick="viewOrder('${order._id}')">View</button>
+                <button class="btn btn-primary" onclick="printOrder('${order._id}')">Print</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function calculateSalesStats(orders) {
+    const today = new Date().toDateString();
+    const todayRevenue = orders
+        .filter(order => new Date(order.orderDate || order.createdAt).toDateString() === today)
+        .reduce((sum, order) => sum + order.total, 0);
+    
+    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    
+    document.getElementById('todayRevenue').textContent = `PKR ${todayRevenue.toFixed(2)}`;
+    document.getElementById('totalOrders').textContent = orders.length;
+    document.getElementById('totalRevenue').textContent = `PKR ${totalRevenue.toFixed(2)}`;
+}
+
+function viewOrder(orderId) {
+    alert('View order: ' + orderId);
+}
+
+function printOrder(orderId) {
+    alert('Print order: ' + orderId);
+}
+</script>
