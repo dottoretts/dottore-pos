@@ -16,19 +16,30 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Simple authentication middleware (for demo purposes)
+// Simple authentication middleware
 app.use(authenticate);
 
-// Routes
+// API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/menu', require('./routes/menu'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/employees', require('./routes/employees'));
 app.use('/api/inventory', require('./routes/inventory'));
 
-// Serve frontend
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Dottore POS API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Serve frontend for all other routes (SPA support)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
@@ -39,6 +50,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Access the application at: http://localhost:${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
