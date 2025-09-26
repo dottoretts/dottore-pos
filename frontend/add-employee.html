@@ -1,0 +1,74 @@
+<div class="page-add-employee">
+    <div class="page-header">
+        <h1>Add Employee</h1>
+    </div>
+    
+    <form id="addEmployeeForm" class="form-container">
+        <div class="form-group">
+            <label for="empName">Full Name *</label>
+            <input type="text" id="empName" name="name" required placeholder="Enter employee name">
+        </div>
+        <div class="form-group">
+            <label for="empCnic">CNIC Number *</label>
+            <input type="text" id="empCnic" name="cnic" required placeholder="Enter CNIC without dashes">
+        </div>
+        <div class="form-group">
+            <label for="empPhone">Phone Number *</label>
+            <input type="text" id="empPhone" name="phone" required placeholder="Enter phone number">
+        </div>
+        <div class="form-group">
+            <label for="empJoiningDate">Joining Date *</label>
+            <input type="date" id="empJoiningDate" name="joiningDate" required>
+        </div>
+        <div class="form-group">
+            <label for="empStatus">Status *</label>
+            <select id="empStatus" name="status" required>
+                <option value="working">Working</option>
+                <option value="not working">Not Working</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Employee</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date to today
+    document.getElementById('empJoiningDate').value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('addEmployeeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const employeeData = {
+            name: formData.get('name'),
+            cnic: formData.get('cnic'),
+            phone: formData.get('phone'),
+            joiningDate: formData.get('joiningDate'),
+            status: formData.get('status')
+        };
+        
+        try {
+            const response = await fetch('/api/employees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(employeeData)
+            });
+            
+            if (response.ok) {
+                this.reset();
+                // Reset date to today
+                document.getElementById('empJoiningDate').value = new Date().toISOString().split('T')[0];
+                alert('Employee added successfully!');
+            } else {
+                throw new Error('Failed to add employee');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to add employee');
+        }
+    });
+});
+</script>
