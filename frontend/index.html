@@ -3,63 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dottore's POS System - Login</title>
+    <title>Dottore's POS System</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="login-page">
-    <div class="login-container">
-        <div class="login-header">
-            <h1>Dottore's POS</h1>
-            <p>Fast Food Restaurant Management System</p>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Dottore's POS</h1>
+                <p>Fast Food Restaurant Management System</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required value="dottore@admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required value="Ammar@Admin">
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
         </div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required value="dottore@admin">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required value="Ammar@Admin">
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
     </div>
 
-    <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                localStorage.setItem('dottoreLoggedIn', 'true');
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('Invalid credentials! Please try again.');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please check if the server is running.');
-        }
-    });
+    <!-- Main Application -->
+    <div id="appScreen" class="screen">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Dottore's</h2>
+                <p>POS System</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#home" class="nav-item active" data-page="home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="#add-menu" class="nav-item" data-page="add-menu">
+                    <i class="fas fa-utensils"></i> Add Menu
+                </a>
+                <a href="#view-sales" class="nav-item" data-page="view-sales">
+                    <i class="fas fa-chart-bar"></i> View Sales
+                </a>
+                <a href="#add-employee" class="nav-item" data-page="add-employee">
+                    <i class="fas fa-user-plus"></i> Add Employee
+                </a>
+                <a href="#view-employees" class="nav-item" data-page="view-employees">
+                    <i class="fas fa-users"></i> View Employees
+                </a>
+                <a href="#add-inventory" class="nav-item" data-page="add-inventory">
+                    <i class="fas fa-box"></i> Add Inventory
+                </a>
+                <a href="#view-inventory" class="nav-item" data-page="view-inventory">
+                    <i class="fas fa-warehouse"></i> View Inventory
+                </a>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+        </div>
 
-    // Redirect to dashboard if already logged in
-    if (localStorage.getItem('dottoreLoggedIn') === 'true') {
-        window.location.href = 'dashboard.html';
-    }
-    </script>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="homePage" class="page active">
+                <div class="page-header">
+                    <h1>Menu Items</h1>
+                    <div class="search-cart">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search menu items...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <button id="cartButton" class="btn btn-secondary">
+                            <i class="fas fa-shopping-cart"></i> Cart (<span id="cartCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+                <div class="menu-grid" id="menuGrid">
+                    <div class="no-items">Loading menu items...</div>
+                </div>
+            </div>
+
+            <!-- Add Menu Page -->
+            <div id="addMenuPage" class="page">
+                <div class="page-header">
+                    <h1>Add Menu Item</h1>
+                </div>
+                <form id="addMenuForm" class="form-container">
+                    <div class="form-group">
+                        <label for="itemName">Item Name *</label>
+                        <input type="text" id="itemName" name="name" required placeholder="Enter item name">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Price (PKR) *</label>
+                        <input type="number" id="itemPrice" name="price" step="0.01" required placeholder="Enter price">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDescription">Description *</label>
+                        <textarea id="itemDescription" name="description" required placeholder="Enter item description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="prepTime">Preparation Time (minutes) *</label>
+                        <input type="number" id="prepTime" name="preparationTime" required placeholder="Enter preparation time">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemImage">Image URL</label>
+                        <input type="text" id="itemImage" name="image" placeholder="Enter image URL (optional)">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </form>
+                
+                <div class="menu-items-list">
+                    <h2>Existing Menu Items</h2>
+                    <div id="menuItemsList" class="items-container">
+                        <div class="no-items">No menu items added yet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Sales Page -->
+            <div id="viewSalesPage" class="page">
+                <div class="page-header">
+                    <h1>Sales History</h1>
+                </div>
+                <div class="sales-container">
+                    <div class="sales-stats">
+                        <div class="stat-card">
+                            <h3>Today's Revenue</h3>
+                            <p id="todayRevenue">PKR 0.00</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Orders</h3>
+                            <p id="totalOrders">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Revenue</h3>
+                            <p id="totalRevenue">PKR 0.00</p>
+                        </div>
+                    </div>
+                    
+                    <div class="sales-table-container">
+                        <h3>Order History</h3>
+                        <div class="table-responsive">
+                            <table class="sales-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTableBody">
+                                    <tr>
+                                        <td colspan="7" class="no-data">Loading sales data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Employee Page -->
+            <div id="addEmployeePage" class="page">
+                <div class="page-header">
+                    <h1>Add Employee</h1>
+                </div>
+                <form id="addEmployeeForm" class="form-container">
+                    <div class="form-group">
+                        <label for="empName">Full Name *</label>
+                        <input type="text" id="empName" name="name" required placeholder="Enter employee name">
+                    </div>
+                    <div class="form-group">
+                        <label for="empCnic">CNIC Number *</label>
+                        <input type="text" id="empCnic" name="cnic" required placeholder="Enter CNIC without dashes">
+                    </div>
+                    <div class="form-group">
+                        <label for="empPhone">Phone Number *</label>
+                        <input type="text" id="empPhone" name="phone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="empJoiningDate">Joining Date *</label>
+                        <input type="date" id="empJoiningDate" name="joiningDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="empStatus">Status *</label>
+                        <select id="empStatus" name="status" required>
+                            <option value="working">Working</option>
+                            <option value="not working">Not Working</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Employee</button>
+                </form>
+            </div>
+
+            <!-- View Employees Page -->
+            <div id="viewEmployeesPage" class="page">
+                <div class="page-header">
+                    <h1>Employees</h1>
+                </div>
+                <div class="table-responsive">
+                    <table class="employees-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>CNIC</th>
+                                <th>Phone</th>
+                                <th>Joining Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesTableBody">
+                            <tr>
+                                <td colspan="6" class="no-data">Loading employees...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add Inventory Page -->
+            <div id="addInventoryPage" class="page">
+                <div class="page-header">
+                    <h1>Add Inventory Item</h1>
+                </div>
+                <form id="addInventoryForm" class="form-container">
+                    <div class="form-group">
+                        <label for="invName">Item Name *</label>
+                        <input type="text" id="invName" name="name" required placeholder="Enter item name">
+                    </div>
+                    <div class="form-group">
+                        <label for="invQuantity">Quantity *</label>
+                        <input type="number" id="invQuantity" name="quantity" required placeholder="Enter quantity">
+                    </div>
+                    <div class="form-group">
+                        <label for="invPurchaseDate">Purchase Date *</label>
+                        <input type="date" id="invPurchaseDate" name="purchaseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="invPurchasePrice">Purchase Price (PKR) *</label>
+                        <input type="number" id="invPurchasePrice" name="purchasePrice" step="0.01" required placeholder="Enter purchase price">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="invNoExpiry" name="hasNoExpiry">
+                            No Expiry Date
+                        </label>
+                    </div>
+                    <div class="form-group" id="expiryDateGroup">
+                        <label for="invExpiryDate">Expiry Date</label>
+                        <input type="date" id="invExpiryDate" name="expiryDate">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Inventory Item</button>
+                </form>
+            </div>
+
+            <!-- View Inventory Page -->
+            <div id="viewInventoryPage" class="page">
+                <div class="page-header">
+                    <h1>Inventory Items</h1>
+                </div>
+                <div class="inventory-stats">
+                    <div class="stat-card">
+                        <h3>Total Items</h3>
+                        <p id="totalItems">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Items Expiring Soon</h3>
+                        <p id="expiringItems">0</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Purchase Date</th>
+                                <th>Purchase Price</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr>
+                                <td colspan="7" class="no-data">Loading inventory...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Cart</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <div class="no-items">Your cart is empty</div>
+                </div>
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">PKR 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (14%):</span>
+                        <span id="cartTax">PKR 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <label for="discountInput">Discount (PKR):</label>
+                        <input type="number" id="discountInput" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="cartTotal">PKR 0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+                <button id="placeOrderBtn" class="btn btn-primary">Place Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Customer Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <div class="form-group">
+                        <label for="customerName">Full Name *</label>
+                        <input type="text" id="customerName" required placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone Number *</label>
+                        <input type="text" id="customerPhone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Delivery Address *</label>
+                        <textarea id="customerAddress" required placeholder="Enter delivery address"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+                <button id="confirmOrderBtn" class="btn btn-primary">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Receipt Modal -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content receipt">
+            <div class="modal-header">
+                <h2>Order Receipt</h2>
+                <button id="printReceiptBtn" class="btn btn-secondary">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+            <div class="modal-body" id="receiptContent">
+                <div class="receipt-loading">Generating receipt...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModals()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
 </html>
