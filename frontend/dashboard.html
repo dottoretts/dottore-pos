@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dottore's POS System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Dottore's</h2>
+                <p>POS System</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="home.html" class="nav-item active">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="add-menu.html" class="nav-item">
+                    <i class="fas fa-utensils"></i> Add Menu
+                </a>
+                <a href="view-sales.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i> View Sales
+                </a>
+                <a href="add-employee.html" class="nav-item">
+                    <i class="fas fa-user-plus"></i> Add Employee
+                </a>
+                <a href="view-employees.html" class="nav-item">
+                    <i class="fas fa-users"></i> View Employees
+                </a>
+                <a href="add-inventory.html" class="nav-item">
+                    <i class="fas fa-box"></i> Add Inventory
+                </a>
+                <a href="view-inventory.html" class="nav-item">
+                    <i class="fas fa-warehouse"></i> View Inventory
+                </a>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div id="cartSection" style="display: none;">
+                        <button id="cartButton" class="btn btn-secondary">
+                            <i class="fas fa-shopping-cart"></i> Cart (<span id="cartCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content will be loaded here -->
+            <div id="pageContent" class="page-content">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Cart</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <div class="no-items">Your cart is empty</div>
+                </div>
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">PKR 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (14%):</span>
+                        <span id="cartTax">PKR 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <label for="discountInput">Discount (PKR):</label>
+                        <input type="number" id="discountInput" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="cartTotal">PKR 0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+                <button id="placeOrderBtn" class="btn btn-primary">Place Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Customer Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <div class="form-group">
+                        <label for="customerName">Full Name *</label>
+                        <input type="text" id="customerName" required placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone Number *</label>
+                        <input type="text" id="customerPhone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Delivery Address *</label>
+                        <textarea id="customerAddress" required placeholder="Enter delivery address"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+                <button id="confirmOrderBtn" class="btn btn-primary">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Receipt Modal -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content receipt">
+            <div class="modal-header">
+                <h2>Order Receipt</h2>
+                <button id="printReceiptBtn" class="btn btn-secondary">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+            <div class="modal-body" id="receiptContent">
+                <div class="receipt-loading">Generating receipt...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModals()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
