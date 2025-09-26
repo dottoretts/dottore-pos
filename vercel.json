@@ -20,8 +20,11 @@
       "dest": "/frontend/$1"
     }
   ],
+  "outputDirectory": "public"
+
   "env": {
     "MONGODB_URI": "mongodb+srv://User:DOTTORE@cluster.tlvc49z.mongodb.net/dottores-pos?retryWrites=true&w=majority&appName=Cluster"
   }
 
 }
+
