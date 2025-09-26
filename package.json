@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "build": "echo 'No build process needed for this project'",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "mkdir -p public && cp -r frontend/* public/ && rm -f public/pages/*.html 2>/dev/null || true",
+    "build:backend": "echo 'Backend build complete'",
+    "vercel-build": "npm run build",
     "test": "echo 'No tests specified'"
   },
   "dependencies": {
@@ -29,5 +32,8 @@
     "nodejs"
   ],
   "author": "Dottore's Restaurant",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }
