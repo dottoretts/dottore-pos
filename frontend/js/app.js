@@ -1,5 +1,7 @@
-// API Base URL
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api';
+// API Base URL - Fixed for Vercel deployment
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:5000/api' 
+    : '/api';
 
 // Global State
 let currentUser = null;
@@ -27,15 +29,15 @@ const printReceiptBtn = document.getElementById('printReceiptBtn');
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing app...');
     checkLoginStatus();
     setupEventListeners();
 });
 
 // Check if user is logged in
 function checkLoginStatus() {
-    // For simplicity, we'll check localStorage
-    // In a real app, you'd verify with the server
     const loggedIn = localStorage.getItem('dottoreLoggedIn');
+    console.log('Login status:', loggedIn);
     if (loggedIn === 'true') {
         showApp();
     } else {
@@ -45,6 +47,8 @@ function checkLoginStatus() {
 
 // Setup Event Listeners
 function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     // Login Form
     loginForm.addEventListener('submit', handleLogin);
     
@@ -74,22 +78,45 @@ function setupEventListeners() {
     printReceiptBtn.addEventListener('click', printReceipt);
     
     // No Expiry Checkbox
-    document.getElementById('invNoExpiry').addEventListener('change', function() {
-        document.getElementById('expiryDateGroup').style.display = this.checked ? 'none' : 'block';
-    });
+    const noExpiryCheckbox = document.getElementById('invNoExpiry');
+    if (noExpiryCheckbox) {
+        noExpiryCheckbox.addEventListener('change', function() {
+            const expiryDateGroup = document.getElementById('expiryDateGroup');
+            if (expiryDateGroup) {
+                expiryDateGroup.style.display = this.checked ? 'none' : 'block';
+            }
+        });
+    }
     
     // Forms
-    document.getElementById('addMenuForm').addEventListener('submit', addMenuItem);
-    document.getElementById('addEmployeeForm').addEventListener('submit', addEmployee);
-    document.getElementById('addInventoryForm').addEventListener('submit', addInventoryItem);
+    const addMenuForm = document.getElementById('addMenuForm');
+    if (addMenuForm) {
+        addMenuForm.addEventListener('submit', addMenuItem);
+    }
+    
+    const addEmployeeForm = document.getElementById('addEmployeeForm');
+    if (addEmployeeForm) {
+        addEmployeeForm.addEventListener('submit', addEmployee);
+    }
+    
+    const addInventoryForm = document.getElementById('addInventoryForm');
+    if (addInventoryForm) {
+        addInventoryForm.addEventListener('submit', addInventoryItem);
+    }
     
     // Search
-    document.getElementById('searchInput').addEventListener('input', filterMenuItems);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterMenuItems);
+    }
+    
+    console.log('Event listeners setup complete');
 }
 
 // Login Handler
 async function handleLogin(e) {
     e.preventDefault();
+    console.log('Login attempt...');
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -104,6 +131,7 @@ async function handleLogin(e) {
         });
         
         const data = await response.json();
+        console.log('Login response:', data);
         
         if (data.success) {
             localStorage.setItem('dottoreLoggedIn', 'true');
@@ -141,6 +169,7 @@ function showApp() {
 // Navigation Handler
 function handleNavigation(e) {
     e.preventDefault();
+    console.log('Navigation clicked:', this.getAttribute('data-page'));
     
     // Update active nav item
     navItems.forEach(item => item.classList.remove('active'));
@@ -153,53 +182,76 @@ function handleNavigation(e) {
 
 // Show Specific Page
 function showPage(pageId) {
+    console.log('Showing page:', pageId);
+    
     // Hide all pages
     pages.forEach(page => page.classList.remove('active'));
     
     // Show selected page
-    document.getElementById(`${pageId}Page`).classList.add('active');
-    
-    // Load page-specific data
-    switch(pageId) {
-        case 'home':
-            loadHomePage();
-            break;
-        case 'add-menu':
-            loadMenuItems();
-            break;
-        case 'view-sales':
-            loadSalesData();
-            break;
-        case 'view-employees':
-            loadEmployees();
-            break;
-        case 'view-inventory':
-            loadInventory();
-            break;
+    const targetPage = document.getElementById(`${pageId}Page`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        
+        // Load page-specific data
+        switch(pageId) {
+            case 'home':
+                loadHomePage();
+                break;
+            case 'add-menu':
+                loadMenuItems();
+                break;
+            case 'view-sales':
+                loadSalesData();
+                break;
+            case 'view-employees':
+                loadEmployees();
+                break;
+            case 'view-inventory':
+                loadInventory();
+                break;
+        }
+    } else {
+        console.error('Page not found:', pageId);
     }
 }
 
 // Load Home Page (Menu Items)
 async function loadHomePage() {
+    console.log('Loading home page...');
     try {
         const response = await fetch(`${API_BASE}/menu`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         menuItems = await response.json();
+        console.log('Menu items loaded:', menuItems);
         displayMenuItems(menuItems);
     } catch (error) {
         console.error('Error loading menu items:', error);
+        showNotification('Error loading menu items. Please check console for details.');
     }
 }
 
 // Display Menu Items
 function displayMenuItems(items) {
     const menuGrid = document.getElementById('menuGrid');
+    if (!menuGrid) {
+        console.error('Menu grid element not found');
+        return;
+    }
+    
     menuGrid.innerHTML = '';
+    
+    if (items.length === 0) {
+        menuGrid.innerHTML = '<div class="no-items">No menu items available. Please add some items first.</div>';
+        return;
+    }
     
     items.forEach(item => {
         const menuItemElement = document.createElement('div');
         menuItemElement.className = 'menu-item';
         menuItemElement.innerHTML = `
-            ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '<div style="height:150px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#666;">No Image</div>'}
+            ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : '<div style="height:150px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#666;">No Image</div>'}
             <h3>${item.name}</h3>
             <div class="price">PKR ${item.price.toFixed(2)}</div>
             <div class="description">${item.description}</div>
@@ -277,7 +329,9 @@ function showCartModal() {
     });
     
     const tax = subtotal * 0.14;
-    const total = subtotal + tax;
+    const discountInput = document.getElementById('discountInput');
+    const discount = discountInput ? parseFloat(discountInput.value) || 0 : 0;
+    const total = subtotal + tax - discount;
     
     document.getElementById('cartSubtotal').textContent = `PKR ${subtotal.toFixed(2)}`;
     document.getElementById('cartTax').textContent = `PKR ${tax.toFixed(2)}`;
@@ -304,7 +358,8 @@ async function placeOrder() {
     const customerName = document.getElementById('customerName').value;
     const customerPhone = document.getElementById('customerPhone').value;
     const customerAddress = document.getElementById('customerAddress').value;
-    const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+    const discountInput = document.getElementById('discountInput');
+    const discount = discountInput ? parseFloat(discountInput.value) || 0 : 0;
     
     if (!customerName || !customerPhone || !customerAddress) {
         alert('Please fill in all customer details.');
@@ -324,7 +379,7 @@ async function placeOrder() {
             quantity: item.quantity,
             price: item.price
         })),
-        tax: 14, // 14%
+        tax: 14,
         discount,
         subtotal,
         total
@@ -341,7 +396,7 @@ async function placeOrder() {
         
         if (response.ok) {
             const order = await response.json();
-            showReceipt(order);
+            showReceipt(order.data || order);
             cart = [];
             updateCartCount();
             customerModal.style.display = 'none';
@@ -361,10 +416,13 @@ function showReceipt(order) {
     
     let itemsHtml = '';
     order.items.forEach(item => {
+        const itemName = item.menuItem?.name || item.name || 'Unknown Item';
+        const itemPrice = item.price || 0;
+        const itemQuantity = item.quantity || 1;
         itemsHtml += `
             <div class="receipt-item">
-                <span>${item.menuItem.name} x ${item.quantity}</span>
-                <span>PKR ${(item.price * item.quantity).toFixed(2)}</span>
+                <span>${itemName} x ${itemQuantity}</span>
+                <span>PKR ${(itemPrice * itemQuantity).toFixed(2)}</span>
             </div>
         `;
     });
@@ -372,8 +430,8 @@ function showReceipt(order) {
     receiptContent.innerHTML = `
         <div class="receipt-header">
             <h3>Dottore's Fast Food</h3>
-            <p>Order #: ${order.orderNumber}</p>
-            <p>Date: ${new Date(order.orderDate).toLocaleString()}</p>
+            <p>Order #: ${order.orderNumber || 'N/A'}</p>
+            <p>Date: ${new Date(order.orderDate || order.createdAt).toLocaleString()}</p>
         </div>
         <div class="receipt-customer">
             <p><strong>Customer:</strong> ${order.customerName}</p>
@@ -443,6 +501,7 @@ function closeModals() {
 // Add Menu Item
 async function addMenuItem(e) {
     e.preventDefault();
+    console.log('Adding menu item...');
     
     const formData = new FormData(e.target);
     const itemData = {
@@ -450,7 +509,7 @@ async function addMenuItem(e) {
         price: parseFloat(formData.get('price')),
         description: formData.get('description'),
         preparationTime: parseInt(formData.get('preparationTime')),
-        image: formData.get('image')
+        image: formData.get('image') || ''
     };
     
     try {
@@ -463,6 +522,7 @@ async function addMenuItem(e) {
         });
         
         if (response.ok) {
+            const result = await response.json();
             e.target.reset();
             loadMenuItems();
             showNotification('Menu item added successfully!');
@@ -479,7 +539,8 @@ async function addMenuItem(e) {
 async function loadMenuItems() {
     try {
         const response = await fetch(`${API_BASE}/menu`);
-        const items = await response.json();
+        const result = await response.json();
+        const items = Array.isArray(result) ? result : (result.data || []);
         displayMenuItemsList(items);
     } catch (error) {
         console.error('Error loading menu items:', error);
@@ -489,7 +550,14 @@ async function loadMenuItems() {
 // Display Menu Items List
 function displayMenuItemsList(items) {
     const menuList = document.getElementById('menuItemsList');
+    if (!menuList) return;
+    
     menuList.innerHTML = '';
+    
+    if (items.length === 0) {
+        menuList.innerHTML = '<div class="no-items">No menu items added yet.</div>';
+        return;
+    }
     
     items.forEach(item => {
         const itemElement = document.createElement('div');
@@ -548,7 +616,8 @@ async function addEmployee(e) {
 async function loadEmployees() {
     try {
         const response = await fetch(`${API_BASE}/employees`);
-        employees = await response.json();
+        const result = await response.json();
+        employees = Array.isArray(result) ? result : (result.data || []);
         displayEmployees();
     } catch (error) {
         console.error('Error loading employees:', error);
@@ -558,6 +627,8 @@ async function loadEmployees() {
 // Display Employees
 function displayEmployees() {
     const tableBody = document.getElementById('employeesTableBody');
+    if (!tableBody) return;
+    
     tableBody.innerHTML = '';
     
     employees.forEach(emp => {
@@ -621,7 +692,8 @@ async function addInventoryItem(e) {
 async function loadInventory() {
     try {
         const response = await fetch(`${API_BASE}/inventory`);
-        inventoryItems = await response.json();
+        const result = await response.json();
+        inventoryItems = Array.isArray(result) ? result : (result.data || []);
         displayInventory();
     } catch (error) {
         console.error('Error loading inventory:', error);
@@ -631,6 +703,8 @@ async function loadInventory() {
 // Display Inventory
 function displayInventory() {
     const tableBody = document.getElementById('inventoryTableBody');
+    if (!tableBody) return;
+    
     tableBody.innerHTML = '';
     
     inventoryItems.forEach(item => {
@@ -653,7 +727,8 @@ function displayInventory() {
 async function loadSalesData() {
     try {
         const response = await fetch(`${API_BASE}/orders`);
-        orders = await response.json();
+        const result = await response.json();
+        orders = Array.isArray(result) ? result : (result.data || []);
         displaySalesData();
         calculateSalesStats();
     } catch (error) {
@@ -664,6 +739,8 @@ async function loadSalesData() {
 // Display Sales Data
 function displaySalesData() {
     const tableBody = document.getElementById('salesTableBody');
+    if (!tableBody) return;
+    
     tableBody.innerHTML = '';
     
     orders.forEach(order => {
@@ -671,7 +748,7 @@ function displaySalesData() {
         row.innerHTML = `
             <td>${order.orderNumber}</td>
             <td>${order.customerName}</td>
-            <td>${new Date(order.orderDate).toLocaleDateString()}</td>
+            <td>${new Date(order.orderDate || order.createdAt).toLocaleDateString()}</td>
             <td>PKR ${order.total.toFixed(2)}</td>
             <td>
                 <button class="btn btn-secondary" onclick="viewOrderDetails('${order._id}')">View</button>
@@ -685,11 +762,14 @@ function displaySalesData() {
 function calculateSalesStats() {
     const today = new Date().toDateString();
     const todayRevenue = orders
-        .filter(order => new Date(order.orderDate).toDateString() === today)
+        .filter(order => new Date(order.orderDate || order.createdAt).toDateString() === today)
         .reduce((sum, order) => sum + order.total, 0);
     
-    document.getElementById('todayRevenue').textContent = `PKR ${todayRevenue.toFixed(2)}`;
-    document.getElementById('totalOrders').textContent = orders.length;
+    const todayRevenueElem = document.getElementById('todayRevenue');
+    const totalOrdersElem = document.getElementById('totalOrders');
+    
+    if (todayRevenueElem) todayRevenueElem.textContent = `PKR ${todayRevenue.toFixed(2)}`;
+    if (totalOrdersElem) totalOrdersElem.textContent = orders.length;
 }
 
 // Show Notification
@@ -713,7 +793,9 @@ function showNotification(message) {
     
     // Remove after 3 seconds
     setTimeout(() => {
-        document.body.removeChild(notification);
+        if (notification.parentNode) {
+            document.body.removeChild(notification);
+        }
     }, 3000);
 }
 
