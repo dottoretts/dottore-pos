@@ -1,0 +1,60 @@
+<div class="page-home">
+    <div class="page-header">
+        <h1>Menu Items</h1>
+        <div class="search-cart">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search menu items...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+    </div>
+    <div class="menu-grid" id="menuGrid">
+        <div class="no-items">Loading menu items...</div>
+    </div>
+</div>
+
+<script>
+// Load menu items when page is shown
+document.addEventListener('DOMContentLoaded', function() {
+    loadHomePage();
+});
+
+async function loadHomePage() {
+    try {
+        const response = await fetch('/api/menu');
+        if (!response.ok) throw new Error('Failed to load menu');
+        const data = await response.json();
+        const menuItems = Array.isArray(data) ? data : (data.data || []);
+        displayMenuItems(menuItems);
+    } catch (error) {
+        console.error('Error loading menu:', error);
+        document.getElementById('menuGrid').innerHTML = '<div class="no-items">Error loading menu items</div>';
+    }
+}
+
+function displayMenuItems(items) {
+    const menuGrid = document.getElementById('menuGrid');
+    if (!items || items.length === 0) {
+        menuGrid.innerHTML = '<div class="no-items">No menu items available</div>';
+        return;
+    }
+
+    menuGrid.innerHTML = items.map(item => `
+        <div class="menu-item">
+            ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : '<div class="no-image">No Image</div>'}
+            <h3>${item.name}</h3>
+            <div class="price">PKR ${item.price.toFixed(2)}</div>
+            <div class="description">${item.description}</div>
+            <div class="prep-time">Prep Time: ${item.preparationTime} min</div>
+            <button class="btn btn-primary" onclick="addToCart('${item._id}')">Add to Cart</button>
+        </div>
+    `).join('');
+}
+
+function addToCart(itemId) {
+    // This will be handled by the main app.js
+    if (window.addToCart) {
+        window.addToCart(itemId);
+    }
+}
+</script>
