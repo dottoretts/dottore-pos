@@ -378,4 +378,34 @@ th {
         width: 95%;
         margin: 10% auto;
     }
+
+}
+
+
+/* Status indicators */
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status.working {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status.not-working {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* No items message */
+.no-items {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 18px;
+    grid-column: 1 / -1;
 }
